@@ -6,7 +6,9 @@ RM	= rm -f
 
 SRCS	= ./source/main.cpp		\
 		  ./source/Network.cpp	\
-		  ./source/Character.cpp
+		  ./source/Character.cpp\
+		  ./source/Map.cpp		\
+		  ./source/Box.cpp
 
 OBJS	= $(SRCS:.cpp=.o)
 

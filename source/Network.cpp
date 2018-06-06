@@ -1,12 +1,14 @@
 #include "Network.h"
 #include <iostream>
 #include <algorithm>
+#include <memory>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdio>
+#include <stdio.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -16,46 +18,64 @@ Network::Network(int port) :
 {
 	// create a socket
 	// socket(int domain, int type, int protocol)
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	this->sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	// non blocking socket
-	fcntl(sockfd, F_SETFL, O_NONBLOCK);
-	if (sockfd < 0)
+	fcntl(this->sockfd, F_SETFL, O_NONBLOCK);
+	if (this->sockfd < 0)
 		std::cerr << "ERROR opening socket" << std::endl;
 	/* setup the host_addr structure for use in bind call */
 	// server byte order
-	serv_addr.sin_family = AF_INET;
+	this->serv_addr.sin_family = AF_INET;
 
 	// automatically be filled with current host's IP address
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	this->serv_addr.sin_addr.s_addr = INADDR_ANY;
 
 	// convert short integer value for port must be converted into network byte order
-	serv_addr.sin_port = htons(port);
+	this->serv_addr.sin_port = htons(this->port);
 
 	// bind(int fd, struct sockaddr *local_addr, socklen_t addr_length)
 	// bind() passes file descriptor, the address structure,
 	// and the length of the address structure
 	// This bind() call will bind  the socket to the current IP address on port, portno
-	if (bind(sockfd, (struct sockaddr *) &serv_addr,
-		 sizeof(serv_addr)) < 0)
+	if (bind(this->sockfd, (struct sockaddr *) &this->serv_addr,
+		 sizeof(this->serv_addr)) < 0)
 	{
 		std::perror("bind");
 		throw 1;
 	}
 	/* Create the socket and set it up to accept connections. */
-	if (listen (sockfd, 1) < 0)
+	if (listen (this->sockfd, 10) < 0)
 	{
 		perror ("listen");
 		exit (EXIT_FAILURE);
 	}
 	/* Initialize the set of active sockets. */
-	FD_ZERO (&active_fd_set);
+	FD_ZERO (&this->active_fd_set);
+	FD_SET(this->sockfd, &this->active_fd_set);
 }
 
-bool Network::ReceiveMessage(int id, std::string & message)
+bool 		Network::SendMessage(int id, std::string const & message)
+{
+	int 	return_value = 0;
+
+	if (message.back() == '\n')
+		return_value = dprintf(id, "%s", message.c_str());
+	else
+		return_value = dprintf(id, "%s\n", message.c_str());
+	if (return_value < 0)
+	{
+		std::cerr << "Couldn't send message to player " << id << "." << std::endl;
+		return false;
+	}
+	return true;
+}
+
+bool 		Network::ReceiveMessage(int id, std::string & message)
 {
 
-	char buffer;
-	int nbytes;
+	char 	buffer;
+	int 	nbytes;
+
 	while (true)
 	{
 		nbytes = read(id, &buffer, 1);
@@ -81,59 +101,68 @@ bool Network::ReceiveMessage(int id, std::string & message)
 	}
 }
 
-void Network::ReadFromClients()
+void 								Network::ReadFromClients()
 {
-	std::string *message = new std::string;
-	fd_set read_fd_set;
-	FD_SET (sockfd, &active_fd_set);
+	std::unique_ptr<std::string> 	message(new std::string);
+	fd_set 							read_fd_set;
+	int 							i;
+	struct timeval  				tv = {0, 50};
+
+	read_fd_set = this->active_fd_set;
 	/* Block until input arrives on one or more active sockets. */
-	read_fd_set = active_fd_set;
-	if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0)
+	if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, &tv) < 0)
 	{
 		std::perror("select");
 		throw 3;
 	}
 	/* Service all the sockets with input pending. */
-	for (int i = 0; i < FD_SETSIZE; ++i)
+	for (i = 0; i < FD_SETSIZE; ++i)
+	{
 		if (FD_ISSET (i, &read_fd_set))
 		{
-			if (i == sockfd)
-			{
-				int id = this->AddClient();
-				FD_SET (id, &active_fd_set);
-			}
+			if (i == this->sockfd)
+				this->AddClient();
 			else
 			{
 				/* Data arriving on an already-connected socket. */
 				if (this->ReceiveMessage(i, *message) == true)
-					std::cout << "Receive " << *message << " from " << i << std::endl;
+					std::cout << "Receive '" << *message << "' from player " << i << std::endl;
 			}
 		}
+	}
 }
 
-int Network::AddClient()
+int 					Network::AddClient()
 {
-	struct sockaddr_in client_addr;
+	struct sockaddr_in	client_addr;
+	int 				new_sockfd;
+
 	socklen_t clilen;
-	listen(sockfd, 5);
-	int newsockfd = accept(sockfd,
-			   (struct sockaddr *) &client_addr, &clilen);
-	if (newsockfd < 0)
+	listen(this->sockfd, 5);
+	new_sockfd = accept(this->sockfd,
+			(struct sockaddr *) &client_addr, &clilen);
+	if (new_sockfd < 0)
 		return -1;
-	clients.push_back(newsockfd);
-	std::cout << "Added " << newsockfd << std::endl;
-	return newsockfd;
+	this->clients.push_back(new_sockfd);
+	std::cout << "Player " << new_sockfd << " joined the game."<< std::endl;
+	FD_SET(new_sockfd, &this->active_fd_set);
+	return new_sockfd;
 }
 
 void Network::RemoveClient(int id)
 {
-	std::cout << "Remove " << id << std::endl;
-	clients.erase(std::find(clients.begin(), clients.end(), id));
+	std::cout << "Player " << id << " left the game." << std::endl;
+	this->clients.erase(std::find(this->clients.begin(), this->clients.end(), id));
 	close(id);
-	FD_CLR(id, &active_fd_set);
+	FD_CLR(id, &this->active_fd_set);
 }
 
 Network::~Network()
 {
-	close(sockfd);
+	close(this->sockfd);
+}
+
+std::vector<int> const & Network::GetClients()
+{
+	return this->clients;
 }

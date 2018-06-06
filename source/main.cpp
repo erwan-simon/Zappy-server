@@ -2,17 +2,16 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <string>
 #include <chrono>
 #include <thread>
 #include "Network.h"
 #include "Character.h"
-
+#include "Map.h"
 
 
 int main(int argc, char *argv[])
 {
-	std::vector<Character *> characters;
-
 	if (argc != 2)
 	{
 		std::cerr << "No port given." << std::endl;
@@ -24,20 +23,20 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	try {
-		Network *network = new Network(std::atoi(argv[1]));
+		Network network(std::atoi(argv[1]));
+		Map map(10, 10);
+		std::string *message = new std::string;
 		while (true)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-			network->ReadFromClients();	
-			/*
-			int id = network->AddClient();
-			if (id > 0)
+			network.ReadFromClients();
+			map.UpdateCharacters(network.GetClients());
+			if (network.GetClients().size() != 0)
 			{
-				characters.push_back(new Character(id));
-				network->ReadFromClients();
-				std::cout << "client added" << std::endl;
+				std::cout << "enter something" << std::endl;
+				std::getline(std::cin, *message);
+				network.SendMessage(network.GetClients().back(), *message);
 			}
-			*/
 		}
 		return 0;
 	} catch (int n)

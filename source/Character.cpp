@@ -5,6 +5,11 @@ Character::Character(int id) :
 {
 }
 
+int Character::GetId() const
+{
+	return (this->id);
+}
+
 Character::~Character()
 {
 }
