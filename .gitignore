@@ -30,6 +30,7 @@
 *.exe
 *.out
 *.app
+server
 
 # vim temporary file
 *.swp

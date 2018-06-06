@@ -13,12 +13,11 @@ Map::Map(int size_x, int size_y) :
 		this->board[y] = new std::shared_ptr<Box>[size_x];
 		for (x = 0; x != this->size_x; x += 1)
 			this->board[y][x] = std::shared_ptr<Box>(new Box);
-	}	
+	}
 }
 
 Map::~Map()
 {
-
 }
 
 bool 	Map::AddCharacter(int id)
