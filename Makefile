@@ -5,6 +5,7 @@ CC	= g++
 RM	= rm -f
 
 SRCS	= ./source/main.cpp		\
+		  ./source/Server.cpp 	\
 		  ./source/Network.cpp	\
 		  ./source/Character.cpp\
 		  ./source/Map.cpp		\

@@ -70,11 +70,11 @@ bool 		Network::SendMessage(int id, std::string const & message)
 	return true;
 }
 
-bool 		Network::ReceiveMessage(int id, std::string & message)
+bool 		Network::ReceiveMessage(int id)
 {
-
-	char 	buffer;
-	int 	nbytes;
+	std::string 	message;
+	char 			buffer;
+	int 			nbytes;
 
 	while (true)
 	{
@@ -94,16 +94,17 @@ bool 		Network::ReceiveMessage(int id, std::string & message)
 		else
 		{
 			if (buffer == '\n')
-				return true;
+				break;
 			/* Data read. */
 			message += buffer;
 		}
 	}
+	this->buffer.push_back(std::make_pair(id, message));
+	return true;
 }
 
 void 								Network::ReadFromClients()
 {
-	std::unique_ptr<std::string> 	message(new std::string);
 	fd_set 							read_fd_set;
 	int 							i;
 	struct timeval  				tv = {0, 50};
@@ -125,8 +126,8 @@ void 								Network::ReadFromClients()
 			else
 			{
 				/* Data arriving on an already-connected socket. */
-				if (this->ReceiveMessage(i, *message) == true)
-					std::cout << "Receive '" << *message << "' from player " << i << std::endl;
+				if (this->ReceiveMessage(i) == true)
+					std::cout << "Receive '" << this->buffer.back().second << "' from player " << i << std::endl;
 			}
 		}
 	}
@@ -152,7 +153,14 @@ int 					Network::AddClient()
 void Network::RemoveClient(int id)
 {
 	std::cout << "Player " << id << " left the game." << std::endl;
-	this->clients.erase(std::find(this->clients.begin(), this->clients.end(), id));
+	for (std::vector<int>::iterator it = this->clients.begin(); it != this->clients.end(); ++it)
+	{
+		if (*it == id)
+		{
+			this->clients.erase(it);
+			break;
+		}
+	}
 	close(id);
 	FD_CLR(id, &this->active_fd_set);
 }
@@ -165,4 +173,14 @@ Network::~Network()
 std::vector<int> const & Network::GetClients()
 {
 	return this->clients;
+}
+
+std::vector<std::pair<int, std::string>> &	Network::GetBuffer()
+{
+	return (this->buffer);
+}
+
+void 	Network::ClearBuffer()
+{
+	this->buffer.clear();
 }
