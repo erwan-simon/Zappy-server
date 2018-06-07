@@ -22,10 +22,12 @@ The server is the main actor if this project. It hosts all the game mechanics. O
 
 The client will connect to the server and represent a player, a beeing in the artificial world. Like anyone of us, humans, it doesn't have any obvious purpose other than survive.
 The AI script will lie in this part.
+You can find it [here](https://github.com/erwan-simon/Zappy-client).
 
 #### The Graphics
 
 The graphics purpose is to monitor the players' peregrination in the artificial world.
+You can find it [here](https://github.com/erwan-simon/Zappy-graphics).
 
 ### Protocol
 
