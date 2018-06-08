@@ -10,7 +10,7 @@ class 					Map {
     public:
 	Map(int size_x, int size_y);
 	~Map();
-
+	void				FoodRain();
 	bool				AddCharacter(int id);
 	bool 				RemoveCharacter(int id);
 	void				UpdateCharacters(std::vector<int> const& clients);
@@ -23,7 +23,7 @@ class 					Map {
     private:
 	int 				size_x;
 	int 				size_y;
-	Box 				**board;
+	Box 				**board; // board[y][x]
 	std::vector<Character>		characters;
 };
 

@@ -18,19 +18,20 @@ class			    Server {
 	Map		    *map;
 	std::vector<int>    graphics;
 
-	bool 		ParseArguments(int id, std::string &argument);
-	void 		UpdateGraphics();
+	bool		    ParseArguments(int id, std::string &argument);
+	void		    UpdateGraphics();
 
-	bool 		AddClient(int id, std::string &message);
-	bool 		SendView(int id, std::string &message);
-	bool 		ReceiveMessage(int id, std::string &message);
-	bool 		MoveLeft(int id, std::string &message);
-	bool		MoveRight(int id, std::string &message);
-	bool 		MoveUp(int id, std::string &message);
-	bool 		MoveDown(int id, std::string &message);
-	bool 		Pick(int id, std::string &message);
-	bool 		AddGraphics(int id, std::string &message);
-	bool		SendBoard(int id, std::string &message);
+	bool		    AddClient(int id, std::string &message);
+	bool		    SendView(int id, std::string &message);
+	bool		    ReceiveMessage(int id, std::string &message);
+	bool		    MoveLeft(int id, std::string &message);
+	bool		    MoveRight(int id, std::string &message);
+	bool		    MoveUp(int id, std::string &message);
+	bool		    MoveDown(int id, std::string &message);
+	bool		    Pick(int id, std::string &message);
+	bool		    AddGraphics(int id, std::string &message);
+	bool		    SendBoard(int id, std::string &message);
+	bool		    SendCharacters(int id, std::string &message);
 
 	std::map<std::string, bool (Server::*)(int, std::string &)> protocol = {
 	    { "200", &Server::AddClient },
@@ -42,7 +43,8 @@ class			    Server {
 	    { "223", &Server::MoveDown },
 	    { "230", &Server::Pick },
 	    { "300", &Server::AddGraphics },
-	    { "301", &Server::SendBoard }
+	    { "301", &Server::SendBoard },
+	    { "302", &Server::SendCharacters }
 	};
 };
 

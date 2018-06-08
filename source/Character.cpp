@@ -35,6 +35,11 @@ bool 	Character::ConsumeFood()
     return true;
 }
 
+int	Character::GetFood() const
+{
+    return (this->food);
+}
+
 Character &	Character::operator=(Character const &other)
 {
     if (&other == this)

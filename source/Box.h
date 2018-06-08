@@ -8,7 +8,7 @@ class		Box {
 
 	int 	GetFood() const;
 	void 	SetFood(int food);
-
+	void	AddFood(int food);
     private:
 	int	food = 0;
 };

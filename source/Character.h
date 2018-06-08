@@ -15,7 +15,7 @@ class			Character {
 	void		Setlocation(int x, int y);
 	bool		ConsumeFood();
 	void 		AddFood(int foodNb);
-
+	int		GetFood() const;
 	Character &	operator=(Character const &other);
 
     private:

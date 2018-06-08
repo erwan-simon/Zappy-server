@@ -105,6 +105,27 @@ bool		Server::SendBoard(int id, std::string &)
     return true;
 }
 
+bool		Server::SendCharacters(int id, std::string &)
+{
+    std::string table("104 [");
+
+    for (const auto & character : this->map->GetCharacters())
+    {
+	table += "[id:";
+	table += std::to_string(character.GetId());
+	table += "][location_x:";
+	table += std::to_string(character.GetLocation()[0]);
+	table += "][location_y:";
+	table += std::to_string(character.GetLocation()[1]);
+	table += "][food:";
+	table += std::to_string(character.GetFood());
+	table += "]";
+    }
+    table += ']';
+    this->network.SendMessage(id, table);
+    return true;
+}
+
 bool	Server::ParseArguments(int id, std::string &argument)
 {
     try {
@@ -150,6 +171,7 @@ bool Server::Play()
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	this->network.ReadFromClients();
 	this->map->UpdateCharacters(this->network.GetClients());
+	this->map->FoodRain();
 	this->UpdateGraphics();
 	if (this->network.GetBuffer().size() != 0)
 	{

@@ -15,6 +15,11 @@ void 	Box::SetFood(int food)
     this->food = food;
 }
 
+void 	Box::AddFood(int food)
+{
+    this->food += food;
+}
+
 Box::~Box()
 {
 }

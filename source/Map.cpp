@@ -25,6 +25,25 @@ Map::~Map()
     delete this->board;
 }
 
+void	Map::FoodRain()
+{
+    // put on the map one food for every character
+    int wanted_number = characters.size();
+    int current_number = 0;
+
+    for (int y = 0; y != this->size_y; y += 1)
+    {
+	for (int x = 0; x != this->size_x; x += 1)
+	{
+	    current_number += this->board[y][x].GetFood();
+	}
+    }
+    while (wanted_number > current_number)
+    {
+	this->board[std::rand() % this->size_y][std::rand() % this->size_x].AddFood(1);
+    }
+}
+
 bool 	Map::AddCharacter(int id)
 {
     for (auto &character : this->characters)
