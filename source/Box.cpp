@@ -5,14 +5,14 @@ Box::Box()
 
 }
 
-int 	Box::GetFood() const
+int Box::GetFood() const
 {
-	return (food);
+    return (food);
 }
 
 void 	Box::SetFood(int food)
 {
-	this->food = food;
+    this->food = food;
 }
 
 Box::~Box()
